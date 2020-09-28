@@ -1,0 +1,24 @@
+{
+    "name": "ldl-framework/router-template",
+    "description": "LDL HTTP Router templating integration",
+    "type": "library",
+    "require": {
+        "ldl-framework/ldl-contracts": "dev-master",
+	    "ldl-framework/template-contracts": "dev-master",
+        "ldl-framework/http-core": "dev-master",
+        "ldl-framework/http-router": "dev-master",
+        "ldl-framework/template-engine-latte": "dev-master"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Federico Stange",
+            "email": "jpfstange@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "LDL\\Http\\Router\\Plugin\\LDL\\Template\\": "src/LDL/Http/Router/Plugin/LDL/Template"
+        }
+    }
+}
