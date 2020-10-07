@@ -52,7 +52,8 @@ $parserCollection = new RouteConfigParserCollection();
 
 $parserCollection->append(
     new TemplateConfigParser(
-        $templateEngineRepository
+        $templateEngineRepository,
+        $responseParserRepository
     )
 );
 

@@ -10,8 +10,9 @@ use LDL\Http\Router\Router;
 class TemplateResponseParser implements ResponseParserInterface
 {
 
-    public const NAMESPACE = 'ldl.response.parser';
-    public const NAME = 'template';
+    private const NAMESPACE = 'ldl.response.parser';
+    private const NAME = 'template';
+
     public const CONTENT_TYPE = 'text/html; charset=UTF-8';
 
     /**
@@ -28,25 +29,38 @@ class TemplateResponseParser implements ResponseParserInterface
      * @var TemplateFileRepository
      */
     private $fileRepository;
-    private $test = 0;
+
+    /**
+     * @var string
+     */
+    private $namespace;
+
+    /**
+     * @var string
+     */
+    private $name;
 
     public function __construct(
         TemplateFileRepository $fileRepository,
-        TemplateEngineRepository $engineRepository
+        TemplateEngineRepository $engineRepository,
+        string $namespace = null,
+        string $name=null
     )
     {
         $this->fileRepository = $fileRepository;
         $this->engineRepository = $engineRepository;
+        $this->namespace = $namespace ?? self::NAMESPACE;
+        $this->name = $name ?? self::NAME;
     }
 
     public function getNamespace(): string
     {
-        return self::NAMESPACE;
+        return $this->namespace;
     }
 
     public function getName() : string
     {
-        return self::NAME;
+        return $this->name;
     }
 
     public function addTemplate(int $responseCode, string $template) : self
@@ -64,7 +78,7 @@ class TemplateResponseParser implements ResponseParserInterface
     {
         $response = $router->getResponse();
         $statusCode = $response->getStatusCode();
-        $engine = $this->engineRepository->getSelectedEngine();
+        $engine = $this->engineRepository->getSelectedItem();
 
         if(!array_key_exists($response->getStatusCode(), $this->templates)){
             throw new \RuntimeException("Template for HTTP Response code \"$statusCode\" not found");

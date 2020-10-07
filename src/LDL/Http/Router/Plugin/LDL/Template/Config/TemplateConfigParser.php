@@ -3,12 +3,14 @@
 namespace LDL\Http\Router\Plugin\LDL\Template\Config;
 
 use LDL\Http\Router\Plugin\LDL\Template\Engine\Repository\TemplateEngineRepository;
-use LDL\Http\Router\Plugin\LDL\Template\Repository\TemplateFileRepository;
-use LDL\Http\Router\Plugin\LDL\Template\Response\Exception\TemplateResponseParserException;
 use LDL\Http\Router\Plugin\LDL\Template\Response\TemplateResponseParser;
+use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepository;
+use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepositoryInterface;
 use LDL\Http\Router\Route\Config\Parser\RouteConfigParserInterface;
 use LDL\Http\Router\Route\Factory\Exception\SchemaException;
 use LDL\Http\Router\Route\Route;
+use LDL\Type\Collection\Exception\ItemSelectionException;
+use LDL\Type\Collection\Exception\UndefinedOffsetException;
 use Psr\Container\ContainerInterface;
 
 class TemplateConfigParser implements RouteConfigParserInterface
@@ -18,13 +20,30 @@ class TemplateConfigParser implements RouteConfigParserInterface
      */
     private $engineRepository;
 
+    /**
+     * @var ResponseParserRepositoryInterface
+     */
+    private $responseParserRepository;
+
     public function __construct(
-        TemplateEngineRepository $engineRepository
+        TemplateEngineRepository $engineRepository,
+        ResponseParserRepository $responseParserRepository
     )
     {
         $this->engineRepository = $engineRepository;
+        $this->responseParserRepository = $responseParserRepository;
     }
 
+    /**
+     * @param array $config
+     * @param Route $route
+     * @param ContainerInterface|null $container
+     * @param string|null $file
+     * @throws Exception\TemplateConfigParserEngineException
+     * @throws SchemaException
+     * @throws \LDL\Framework\Base\Exception\LockingException
+     * @throws \LDL\Type\Collection\Exception\CollectionKeyException
+     */
     public function parse(
         array $config,
         Route $route,
@@ -32,15 +51,6 @@ class TemplateConfigParser implements RouteConfigParserInterface
         string $file = null
     ): void
     {
-        /**
-         * @var TemplateResponseParser $responseParser
-         */
-        $responseParser = $route->getConfig()->getResponseParser();
-
-        if(!$responseParser instanceof TemplateResponseParser){
-            return;
-        }
-
         if(count($this->engineRepository) === 0){
             $msg = 'No template engines found in template engine repository';
             throw new Exception\TemplateConfigParserEngineException($msg);
@@ -52,14 +62,21 @@ class TemplateConfigParser implements RouteConfigParserInterface
             throw new SchemaException('Template engine specification was not found in route configuration');
         }
 
+        $templateResponseParsers = $this->responseParserRepository
+            ->filterByInterface(TemplateResponseParser::class);
+
         $this->engineRepository->select($engine);
 
-        foreach($this->getTemplates($config) as $responseCode => $template){
-            if(!array_key_exists('file', $template)){
-                throw new SchemaException('Invalid template section, missing file');
-            }
+        $responseCodes = $this->getTemplatesByResponseCode($config);
 
-            $responseParser->addTemplate((int) $responseCode, $template['file']);
+
+        foreach($responseCodes as $code => $file){
+            /**
+             * @var TemplateResponseParser $templateResponseParser
+             */
+            foreach($templateResponseParsers as $templateResponseParser){
+                $templateResponseParser->addTemplate($code, $file);
+            }
         }
     }
 
@@ -76,12 +93,90 @@ class TemplateConfigParser implements RouteConfigParserInterface
         return (string) $config['response']['template']['engine'];
     }
 
-    private function getTemplates(array $config) : ?array
+    private function getTemplatesByResponseCode(array $config) : ?array
     {
         if(false ===  array_key_exists('codes', $config['response']['template'])) {
             return null;
         }
 
-        return $config['response']['template']['codes'];
+        $responseCodes = $config['response']['template']['codes'];
+
+        $codes = [];
+        foreach($responseCodes as $code => $value){
+            if (!array_key_exists('file', $value)) {
+                throw new SchemaException('Invalid template section, missing file');
+            }
+
+            if('any' === $code){
+                $code = '100-599';
+            }
+
+            if(preg_match('#[0-9]+-[0-9]+#', (string) $code)){
+                $codes = array_replace($this->parseResponseRange($code, $value['file']), $codes);
+                continue;
+            }
+
+            if(preg_match('#\,#', (string) $code)){
+                $codes = array_replace($this->parseCommaDelimitedResponseRange($code, $value['file']), $codes);
+                continue;
+            }
+
+            $codes[$code] = $value['file'];
+
+        }
+
+        return $codes;
+    }
+
+    private function parseCommaDelimitedResponseRange(string $responseCodes, string $file) : array
+    {
+        $codes = array_flip(explode(',', $responseCodes));
+
+        array_walk($codes, static function(&$value, $code) use($file){
+            if($code < 100 || $code > 599){
+                $msg = sprintf(
+                    'Invalid HTTP response code: "%s", in response->template->codes section',
+                    $code
+                );
+                throw new SchemaException($msg);
+
+            }
+
+            $value = $file;
+        });
+
+        return $codes;
+    }
+
+    private function parseResponseRange(string $responseCodes, string $file) : array
+    {
+        $codes = explode('-', $responseCodes);
+        $start = (int) $codes[0];
+        $end = (int) $codes[1];
+
+        if($start < 100 || $start > 599){
+            $msg = sprintf(
+                'Invalid HTTP start response code: "%s", in response->template->codes section',
+                $start
+            );
+            throw new SchemaException($msg);
+        }
+
+        if($end < 100 || $end > 599){
+            $msg = sprintf(
+                'Invalid end response code: "%s", in response->template->codes section',
+                $start
+            );
+            throw new SchemaException($msg);
+        }
+
+        if($start >= $end){
+            $msg = 'Start response code must be greater than end response code, in response->template->codes section';
+            throw new SchemaException($msg);
+        }
+
+        return array_map(static function() use ($file){
+            return $file;
+        }, array_flip(range($start, $end)));
     }
 }

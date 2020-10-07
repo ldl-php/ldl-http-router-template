@@ -3,12 +3,13 @@
     "description": "LDL HTTP Router templating integration",
     "type": "library",
     "require": {
-        "ldl-framework/ldl-contracts": "dev-master",
-	    "ldl-framework/template-contracts": "dev-master",
-        "ldl-framework/http-core": "dev-master",
+        "ldl-framework/framework-base": "dev-master",
+        "ldl-framework/template-contracts": "dev-master",
         "ldl-framework/http-router": "dev-master",
         "ldl-framework/template-engine-latte": "dev-master"
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "license": "MIT",
     "authors": [
         {
