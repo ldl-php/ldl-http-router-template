@@ -65,17 +65,21 @@ class TemplateConfigParser implements RouteConfigParserInterface
         $templateResponseParsers = $this->responseParserRepository
             ->filterByInterface(TemplateResponseParser::class);
 
+        if(!count($templateResponseParsers)){
+            return;
+        }
+
         $this->engineRepository->select($engine);
 
         $responseCodes = $this->getTemplatesByResponseCode($config);
 
 
-        foreach($responseCodes as $code => $file){
+        foreach($responseCodes as $code => $template){
             /**
              * @var TemplateResponseParser $templateResponseParser
              */
             foreach($templateResponseParsers as $templateResponseParser){
-                $templateResponseParser->addTemplate($code, $file);
+                $templateResponseParser->addTemplate($code, $template);
             }
         }
     }
@@ -165,7 +169,7 @@ class TemplateConfigParser implements RouteConfigParserInterface
         if($end < 100 || $end > 599){
             $msg = sprintf(
                 'Invalid end response code: "%s", in response->template->codes section',
-                $start
+                $end
             );
             throw new SchemaException($msg);
         }

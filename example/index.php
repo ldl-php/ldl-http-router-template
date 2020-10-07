@@ -42,6 +42,7 @@ $templateEngineRepository->append(new PhpTemplateEngine(),'template.engine.php')
 
 $responseParserRepository = new ResponseParserRepository();
 $responseParserRepository->append(new TemplateResponseParser($templateFileRepository, $templateEngineRepository));
+$responseParserRepository->append(new TemplateResponseParser($templateFileRepository, $templateEngineRepository));
 
 $exceptionHandlerCollection = new ExceptionHandlerCollection();
 $exceptionHandlerCollection->append(new HttpMethodNotAllowedExceptionHandler());
