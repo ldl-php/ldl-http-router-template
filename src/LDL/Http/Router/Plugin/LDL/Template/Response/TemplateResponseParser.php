@@ -4,10 +4,11 @@ namespace LDL\Http\Router\Plugin\LDL\Template\Response;
 
 use LDL\Http\Router\Plugin\LDL\Template\Engine\Repository\TemplateEngineRepository;
 use LDL\Http\Router\Plugin\LDL\Template\Repository\TemplateFileRepository;
+use LDL\Http\Router\Response\Parser\AbstractResponseParser;
 use LDL\Http\Router\Response\Parser\ResponseParserInterface;
 use LDL\Http\Router\Router;
 
-class TemplateResponseParser implements ResponseParserInterface
+class TemplateResponseParser extends AbstractResponseParser
 {
 
     private const NAMESPACE = 'ldl.response.parser';
