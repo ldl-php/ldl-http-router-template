@@ -21,16 +21,18 @@ use LDL\Http\Router\Plugin\LDL\Template\Engine\Repository\TemplateEngineReposito
 use LDL\Http\Router\Plugin\LDL\Template\Engine\PhpTemplateEngine;
 use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepository;
 use LDL\Http\Router\Plugin\LDL\Template\Response\TemplateResponseParser;
+use Symfony\Component\HttpFoundation\ParameterBag;
 
 class Dispatcher implements RouteDispatcherInterface
 {
     public function dispatch(
         RequestInterface $request,
-        ResponseInterface $response
+        ResponseInterface $response,
+        ParameterBag $parameterBag = null
     ) : ?array
     {
         return [
-            'name' => $request->get('name')
+            'name' => $parameterBag->get('urlName')
         ];
     }
 }

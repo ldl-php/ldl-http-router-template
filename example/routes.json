@@ -27,6 +27,31 @@
           }
         }
       }
+    },
+    {
+      "version": "1.0",
+      "url": {
+        "prefix": "error"
+      },
+      "request": {
+        "method": "get"
+      },
+      "name": "test",
+      "description": "A test route",
+      "dispatcher": {
+        "class": "Dispatcher"
+      },
+      "response": {
+        "parser": "ldl.response.parser.template",
+        "template": {
+          "engine": "template.engine.php",
+          "codes": {
+            "any": {
+              "file": "error.php"
+            }
+          }
+        }
+      }
     }
   ]
 }

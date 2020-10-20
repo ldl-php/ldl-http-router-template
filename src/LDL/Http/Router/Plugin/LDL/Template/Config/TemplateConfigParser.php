@@ -8,9 +8,7 @@ use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepository;
 use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepositoryInterface;
 use LDL\Http\Router\Route\Config\Parser\RouteConfigParserInterface;
 use LDL\Http\Router\Route\Factory\Exception\SchemaException;
-use LDL\Http\Router\Route\Route;
-use LDL\Type\Collection\Exception\ItemSelectionException;
-use LDL\Type\Collection\Exception\UndefinedOffsetException;
+use LDL\Http\Router\Route\RouteInterface;
 use Psr\Container\ContainerInterface;
 
 class TemplateConfigParser implements RouteConfigParserInterface
@@ -36,7 +34,7 @@ class TemplateConfigParser implements RouteConfigParserInterface
 
     /**
      * @param array $config
-     * @param Route $route
+     * @param RouteInterface $route
      * @param ContainerInterface|null $container
      * @param string|null $file
      * @throws Exception\TemplateConfigParserEngineException
@@ -46,7 +44,7 @@ class TemplateConfigParser implements RouteConfigParserInterface
      */
     public function parse(
         array $config,
-        Route $route,
+        RouteInterface $route,
         ContainerInterface $container = null,
         string $file = null
     ): void
