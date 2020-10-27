@@ -10,9 +10,7 @@
       },
       "name": "test",
       "description": "A test route",
-      "dispatcher": {
-        "class": "Dispatcher"
-      },
+      "dispatcher": "dispatcher",
       "response": {
         "parser": "ldl.response.parser.template",
         "template": {
@@ -38,9 +36,7 @@
       },
       "name": "test",
       "description": "A test route",
-      "dispatcher": {
-        "class": "Dispatcher"
-      },
+      "dispatcher": "dispatcher",
       "response": {
         "parser": "ldl.response.parser.template",
         "template": {

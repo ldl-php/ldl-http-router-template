@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace LDL\Http\Router\Plugin\LDL\Template\Repository;
+namespace LDL\Http\Router\Plugin\LDL\Template\Finder;
 
 use LDL\Template\Contracts\TemplateEngineInterface;
 
-class TemplateFileRepository
+class TemplateFileFinder
 {
     /**
      * @var string
