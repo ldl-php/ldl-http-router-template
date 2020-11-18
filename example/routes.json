@@ -10,7 +10,11 @@
       },
       "name": "test",
       "description": "A test route",
-      "dispatcher": "dispatcher",
+      "middleware": {
+        "dispatchers": [
+          "template.dispatcher"
+        ]
+      },
       "response": {
         "parser": "ldl.response.parser.template",
         "template": {

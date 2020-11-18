@@ -27,10 +27,6 @@ class TemplateResponseParser extends AbstractResponseParser
      */
     private $fileFinder;
 
-    /**
-     * @var string
-     */
-    private $name;
 
     public function __construct(
         TemplateFileFinder $fileFinder,
@@ -38,14 +34,10 @@ class TemplateResponseParser extends AbstractResponseParser
         string $name=null
     )
     {
+        parent::__construct($name ?? self::NAME);
+
         $this->fileFinder = $fileFinder;
         $this->engineRepository = $engineRepository;
-        $this->name = $name ?? self::NAME;
-    }
-
-    public function getName() : string
-    {
-        return $this->name;
     }
 
     public function addTemplate(int $responseCode, string $template) : self
@@ -59,7 +51,7 @@ class TemplateResponseParser extends AbstractResponseParser
         return self::CONTENT_TYPE;
     }
 
-    public function parse(array $data, Router $router): string
+    public function _parse(array $data, Router $router): string
     {
         $response = $router->getResponse();
         $statusCode = $response->getStatusCode();

@@ -33,7 +33,6 @@ class TemplateConfigParser implements RouteConfigParserInterface
     }
 
     /**
-     * @param array $config
      * @param RouteInterface $route
      * @param string|null $file
      * @throws Exception\TemplateConfigParserEngineException
@@ -42,11 +41,12 @@ class TemplateConfigParser implements RouteConfigParserInterface
      * @throws \LDL\Type\Collection\Exception\CollectionKeyException
      */
     public function parse(
-        array $config,
         RouteInterface $route,
         string $file = null
     ): void
     {
+        $config = $route->getConfig()->getRawConfig();
+
         if(count($this->engineRepository) === 0){
             $msg = 'No template engines found in template engine repository';
             throw new Exception\TemplateConfigParserEngineException($msg);

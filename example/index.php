@@ -10,11 +10,9 @@ use LDL\Http\Router\Handler\Exception\Collection\ExceptionHandlerCollection;
 use LDL\Http\Router\Handler\Exception\Handler\HttpMethodNotAllowedExceptionHandler;
 use LDL\Http\Router\Handler\Exception\Handler\HttpRouteNotFoundExceptionHandler;
 use LDL\Http\Router\Handler\Exception\Handler\InvalidContentTypeExceptionHandler;
-use LDL\Http\Router\Route\RouteInterface;
 use LDL\Http\Router\Router;
 use LDL\Http\Router\Route\Factory\RouteFactory;
 use LDL\Http\Router\Route\Group\RouteGroup;
-use LDL\Http\Router\Route\Config\Parser\RouteConfigParserCollection;
 use LDL\Http\Router\Plugin\LDL\Template\Config\TemplateConfigParser;
 use LDL\Http\Router\Plugin\LDL\Template\Finder\TemplateFileFinder;
 use LDL\Http\Router\Plugin\LDL\Template\Engine\Repository\TemplateEngineRepository;
@@ -22,24 +20,17 @@ use LDL\Http\Router\Plugin\LDL\Template\Engine\PhpTemplateEngine;
 use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepository;
 use LDL\Http\Router\Plugin\LDL\Template\Response\TemplateResponseParser;
 use LDL\Http\Router\Middleware\AbstractMiddleware;
+use LDL\Http\Router\Route\Config\Parser\RouteConfigParserRepository;
+use LDL\Http\Router\Middleware\DispatcherRepository;
+
 use Symfony\Component\HttpFoundation\ParameterBag;
 
-class Dispatcher extends AbstractMiddleware
+class TemplateDispatcher extends AbstractMiddleware
 {
-    public function isActive(): bool
-    {
-        return true;
-    }
-
-    public function getPriority(): int
-    {
-        return 1;
-    }
-
-    public function dispatch(
-        RouteInterface $route,
+    public function _dispatch(
         RequestInterface $request,
         ResponseInterface $response,
+        Router $router,
         ParameterBag $parameterBag = null
     ) : ?array
     {
@@ -61,9 +52,9 @@ $routerExceptionHandlers->append(new HttpMethodNotAllowedExceptionHandler('http.
     ->append(new HttpRouteNotFoundExceptionHandler('http.route.not.found'))
     ->append(new InvalidContentTypeExceptionHandler('http.invalid.content'));
 
-$parserCollection = new RouteConfigParserCollection();
+$parserRepo = new RouteConfigParserRepository();
 
-$parserCollection->append(
+$parserRepo->append(
     new TemplateConfigParser(
         $templateEngineRepository,
         $responseParserRepository
@@ -75,18 +66,18 @@ $response = new Response();
 $router = new Router(
     Request::createFromGlobals(),
     $response,
-    $routerExceptionHandlers,
+    $parserRepo,
+    new ExceptionHandlerCollection(),
     $responseParserRepository
 );
 
-$router->getDispatcherChain()
-    ->append(new Dispatcher('dispatcher'));
+$dispatcherRepository = new DispatcherRepository();
+$dispatcherRepository->append(new TemplateDispatcher('template.dispatcher'));
 
 $routes = RouteFactory::fromJsonFile(
     './routes.json',
     $router,
-    null,
-    $parserCollection
+    $dispatcherRepository
 );
 
 $group = new RouteGroup('Test Group', 'test', $routes);
